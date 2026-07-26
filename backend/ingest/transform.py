@@ -5,9 +5,7 @@ import duckdb
 
 
 def _estimate_missing_substation_locations(con) -> None:
-    """Substations absent from OSM still get a map location: the centroid of
-    their feeders' segment geometry. Marked location_source='estimated' so the
-    UI can distinguish it from a surveyed OSM point."""
+    """Fill missing substation locations with the centroid of their feeders' segments."""
     missing = [r[0] for r in con.execute(
         "SELECT name FROM substations WHERE geometry_geojson IS NULL").fetchall()]
     for name in missing:
@@ -28,12 +26,7 @@ def _estimate_missing_substation_locations(con) -> None:
 
 
 def run_transform(db_path: Path, data_dir: Path, snapshot_id: str) -> None:
-    """Derive serving tables from a raw parquet snapshot.
-
-    segments/feeders/substations reflect the given snapshot only (replaced each
-    run); feeder_history is SCD2 — rows are closed/opened by attrs_hash, with
-    valid_from/valid_to holding snapshot ids (sortable YYYYMMDDTHHMMSS strings).
-    """
+    """Derive serving tables and SCD2 feeder_history from a raw parquet snapshot."""
     snap = Path(data_dir) / "snapshots" / snapshot_id
     con = duckdb.connect(str(db_path))
     try:
@@ -79,7 +72,6 @@ def run_transform(db_path: Path, data_dir: Path, snapshot_id: str) -> None:
             FROM segments WHERE feeder_id IS NOT NULL
             GROUP BY feeder_id
         """)
-        # OSM-derived locations live in their own table so re-transforms keep them
         con.execute(
             "CREATE TABLE IF NOT EXISTS osm_substation_locations (name VARCHAR PRIMARY KEY, geometry_geojson VARCHAR)"
         )
@@ -115,7 +107,6 @@ def run_transform(db_path: Path, data_dir: Path, snapshot_id: str) -> None:
                        queued_der_mw, connected_der_mw)) AS attrs_hash
             FROM feeders
         """)
-        # close open rows whose attrs changed
         con.execute(
             """
             UPDATE feeder_history h SET valid_to = ?
@@ -125,7 +116,6 @@ def run_transform(db_path: Path, data_dir: Path, snapshot_id: str) -> None:
             """,
             [snapshot_id],
         )
-        # open rows for new or changed feeders
         con.execute(
             """
             INSERT INTO feeder_history

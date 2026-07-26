@@ -5,8 +5,7 @@ from ingest.transform import run_transform
 
 
 def rows(local_min=1.5, queued=3.0):
-    """local_min/queued apply only to feeder 1B1234; 2C9999 stays constant
-    so SCD2 tests can distinguish changed vs unchanged feeders."""
+    """Vary only feeder 1B1234 so SCD2 tests can tell changed from unchanged."""
 
     def seg(oid, fid, sub):
         return {
@@ -64,7 +63,7 @@ def test_transform_builds_core_tables(tmp_path):
         "SELECT feeder_count, geometry_geojson, location_source FROM substations WHERE name='BRIDGE ST'"
     ).fetchone()
     assert s[0] == 1
-    assert s[2] == "estimated"  # no OSM match, so centroid of its feeders' segments
+    assert s[2] == "estimated"
     import json
     lng, lat = json.loads(s[1])["coordinates"]
     assert -74.0 < lng < -73.7 and 40.6 < lat < 40.9
@@ -84,8 +83,8 @@ def test_history_scd2_close_and_open(tmp_path):
         "WHERE feeder_id='1B1234' ORDER BY valid_from"
     ).fetchall()
     assert len(hist) == 2
-    assert hist[0][0] == 1.5 and hist[0][2] is not None  # closed
-    assert hist[1][0] == 0.5 and hist[1][2] is None  # open
+    assert hist[0][0] == 1.5 and hist[0][2] is not None
+    assert hist[1][0] == 0.5 and hist[1][2] is None
     n = con.sql("SELECT count(*) FROM feeder_history WHERE feeder_id='2C9999'").fetchone()[0]
     assert n == 1
 
@@ -94,6 +93,40 @@ def test_transform_idempotent_per_snapshot(tmp_path):
     sid = write_snapshot(rows(), tmp_path)
     db = tmp_path / "test.duckdb"
     run_transform(db, tmp_path, sid)
-    run_transform(db, tmp_path, sid)  # re-run same snapshot
+    run_transform(db, tmp_path, sid)
     con = duckdb.connect(str(db))
     assert con.sql("SELECT count(*) FROM feeder_history WHERE feeder_id='1B1234'").fetchone()[0] == 1
+
+
+def test_disappeared_feeder_keeps_open_row(tmp_path):
+    """A feeder missing from the next snapshot keeps its open history row."""
+    from datetime import datetime, timezone
+
+    db = tmp_path / "test.duckdb"
+    sid1 = write_snapshot(rows(), tmp_path, now=datetime(2026, 7, 1, tzinfo=timezone.utc))
+    run_transform(db, tmp_path, sid1)
+    gone = rows()
+    gone[0] = [seg for seg in gone[0] if seg["attributes"]["FEEDER_ID"] != "2C9999"]
+    sid2 = write_snapshot(gone, tmp_path, now=datetime(2026, 7, 2, tzinfo=timezone.utc))
+    run_transform(db, tmp_path, sid2)
+    con = duckdb.connect(str(db))
+    open_row = con.sql(
+        "SELECT valid_to FROM feeder_history WHERE feeder_id='2C9999'"
+    ).fetchone()
+    assert open_row is not None and open_row[0] is None
+
+
+def test_osm_location_survives_and_estimated_fills_rest(tmp_path):
+    sid = write_snapshot(rows(), tmp_path)
+    db = tmp_path / "test.duckdb"
+    run_transform(db, tmp_path, sid)
+    con = duckdb.connect(str(db))
+    con.execute(
+        "INSERT OR REPLACE INTO osm_substation_locations VALUES "
+        "('BRIDGE ST', '{\"type\": \"Point\", \"coordinates\": [-73.5, 40.5]}')"
+    )
+    con.close()
+    run_transform(db, tmp_path, sid)
+    con = duckdb.connect(str(db))
+    src = dict(con.sql("SELECT name, location_source FROM substations").fetchall())
+    assert src["BRIDGE ST"] == "osm"

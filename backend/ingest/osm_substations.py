@@ -1,10 +1,4 @@
-"""Phase 2 stretch: fill substations.geometry_geojson from OpenStreetMap.
-
-OSM substations (power=substation) carry a `name` tag; ConEd substation names
-come from the hosting capacity map. Matching is normalized-name equality first,
-fuzzy ratio second — conservative threshold, because a wrong location is worse
-than no location.
-"""
+"""Fill substations.geometry_geojson from OpenStreetMap (power=substation) by name matching."""
 
 import json
 import re
@@ -32,12 +26,7 @@ def best_match(coned_name: str, osm_by_norm: dict[str, str], threshold: float = 
 
 
 def fetch_osm_substations() -> dict[str, str]:
-    """QuackOSM pull of power=substation for the ConEd service area
-    (NYC + Westchester) → {normalized_name: geojson point}.
-
-    Untested by design (network + heavy optional dep); the matcher above is the
-    tested unit. Requires `pip install -e '.[osm]'`.
-    """
+    """Pull power=substation for NYC + Westchester; returns {normalized_name: geojson point}."""
     from shapely.ops import unary_union
 
     import quackosm as qosm
@@ -60,8 +49,7 @@ def fetch_osm_substations() -> dict[str, str]:
 
 
 def match_substations(db_path: Path, osm_by_norm: dict[str, str]) -> int:
-    """Persist matches in osm_substation_locations (survives re-transforms) and
-    apply them to the current substations table."""
+    """Persist matches in osm_substation_locations and apply them to substations."""
     con = duckdb.connect(str(db_path))
     try:
         con.execute(

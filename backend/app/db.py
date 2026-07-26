@@ -2,7 +2,7 @@ import duckdb
 
 from app.config import settings
 
-DB_PATH_OVERRIDE = None  # tests set this
+DB_PATH_OVERRIDE = None
 
 
 def get_con() -> duckdb.DuckDBPyConnection:

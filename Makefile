@@ -1,10 +1,8 @@
 .PHONY: run run-local ingest test dev
 
-# One command, with Docker (recommended)
 run:
 	docker compose up --build
 
-# One command, without Docker — needs Python 3.12+ and Node 20+
 run-local:
 	cd backend && python3 -m venv .venv && .venv/bin/pip install -q -e '.[dev]'
 	cd frontend && npm install --silent && npm run build
@@ -16,6 +14,7 @@ ingest:
 
 test:
 	cd backend && .venv/bin/python -m pytest -v
+	cd frontend && npx vitest run
 
 dev:
 	cd backend && .venv/bin/uvicorn app.main:app --reload --port 8000

@@ -9,3 +9,6 @@ docs/
 frontend/.next/
 .env
 .DS_Store
+backend/files/
+backend/cache/
+backend/*.egg-info/

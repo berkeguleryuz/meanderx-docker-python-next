@@ -33,11 +33,7 @@ def _to_table(rows: list[dict]) -> pa.Table:
 def write_snapshot(
     rows_by_layer: dict[int, list[dict]], data_dir: Path, now: datetime | None = None
 ) -> str | None:
-    """Write raw parquet snapshot; returns snapshot_id, or None if content is unchanged.
-
-    Parquet files land before the registry line is appended, so a crash mid-write
-    leaves an unregistered directory that transform ignores (registry is truth).
-    """
+    """Write a raw parquet snapshot; returns snapshot_id, or None if content is unchanged."""
     data_dir = Path(data_dir)
     chash = content_hash(rows_by_layer)
     registry = read_registry(data_dir)

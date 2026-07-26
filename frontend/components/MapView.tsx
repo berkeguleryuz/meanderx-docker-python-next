@@ -4,7 +4,6 @@ import { CircleMarker, GeoJSON, MapContainer, Marker, TileLayer, Tooltip } from 
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Ring around the selected-site logo, drawn with the logo's own palette
 const selectedIcon = L.divIcon({
   className: "logo-pin-wrap",
   html: '<span class="logo-pin"><img src="/meanderx.png" alt="" /></span>',
@@ -40,7 +39,6 @@ export default function MapView({
     if (!s?.geometry_geojson) return;
     const [lng, lat] = (JSON.parse(s.geometry_geojson) as { coordinates: [number, number] })
       .coordinates;
-    // keep the point in the upper half so the bottom sheet does not cover it
     mapRef.current.flyTo([lat - 0.045, lng], 12, { duration: 0.6 });
   }, [selectedSubstation, substations]);
 
@@ -57,8 +55,6 @@ export default function MapView({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
       />
       {(() => {
-        // Twin banks (NO.1/NO.2) share one physical site in OSM; nudge stacked
-        // markers apart so both stay visible and clickable.
         const seen = new Map<string, number>();
         return substations.map((s) => {
           if (!s.geometry_geojson) return null;

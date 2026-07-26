@@ -1,7 +1,5 @@
 "use client";
 
-/** Horizontal gauge: how much of the feeder's best-case capacity survives its
- *  thermal bottleneck. Fill = pv_thermal / max; the number is the story. */
 export default function CapacityGauge({
   value,
   max,

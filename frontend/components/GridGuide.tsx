@@ -2,9 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FeederDetail } from "@/lib/api";
 
-/** Rule-based explainer, styled like a chat assistant. No LLM behind it:
- *  the copy is composed from the numbers on screen so it never invents data. */
-function explain(feeder: FeederDetail | null): string[] {
+export function explain(feeder: FeederDetail | null): string[] {
   if (!feeder) {
     return [
       "Welcome. This map shows Con Edison's distribution grid in New York.",

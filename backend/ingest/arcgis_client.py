@@ -22,7 +22,7 @@ def _get_with_retry(client: httpx.Client, url: str, params: dict) -> dict:
             resp = client.get(url, params=params)
             resp.raise_for_status()
             data = resp.json()
-            if "error" in data:  # ArcGIS returns errors with HTTP 200
+            if "error" in data:
                 raise RuntimeError(f"ArcGIS error: {data['error'].get('message')}")
             return data
         except (httpx.HTTPError, json.JSONDecodeError) as exc:
