@@ -69,7 +69,8 @@ def get_substation(con, name: str) -> dict | None:
     sub = rows[0]
     sub["feeders"] = _dicts(
         con.execute(
-            "SELECT feeder_id, friendly_name, hosting_capacity_min_mw, queued_der_mw "
+            "SELECT feeder_id, friendly_name, hosting_capacity_min_mw, hosting_capacity_max_mw, "
+            "pv_thermal_mw, queued_der_mw, connected_der_mw "
             "FROM feeders WHERE substation = ? ORDER BY feeder_id",
             [name],
         )

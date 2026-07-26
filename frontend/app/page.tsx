@@ -74,12 +74,18 @@ export default function Home() {
     }
   };
 
+  const rowPct = (v: number | null | undefined, max: number) =>
+    v != null && max > 0 ? Math.min(100, (v / max) * 100) : 0;
+  const metricNum = (f: FeederSummary, k: FeederSort) =>
+    k === "queued" ? f.queued_der_mw : k === "connected" ? f.connected_der_mw : f.pv_thermal_mw;
   const subMetric = (s: SubstationSummary) =>
     subSort === "connected" ? s.connected_mw : subSort === "feeders" ? s.feeder_count : s.queued_mw;
+  const feederMax = Math.max(0, ...feeders.map((f) => metricNum(f, sort) ?? 0));
   const subsSorted =
     subSort === "id"
       ? [...substations].sort((a, b) => a.name.localeCompare(b.name))
       : [...substations].sort((a, b) => (subMetric(b) ?? 0) - (subMetric(a) ?? 0));
+  const subMax = Math.max(0, ...substations.map((s) => subMetric(s) ?? 0));
 
   return (
     <main className="layout">
@@ -129,6 +135,12 @@ export default function Home() {
                     <span>{f.substation ?? "?"}</span>
                   </div>
                   <span className="row-val">{metric(f, sort)}</span>
+                  <div className="row-track">
+                    <div
+                      className="fg-fill"
+                      style={{ width: `${rowPct(metricNum(f, sort), feederMax)}%` }}
+                    />
+                  </div>
                 </li>
               ))}
             </ul>
@@ -177,6 +189,12 @@ export default function Home() {
                       ? `${s.feeder_count ?? "?"}`
                       : `${(subMetric(s) as number | null)?.toFixed(1) ?? "?"} MW`}
                   </span>
+                  <div className="row-track">
+                    <div
+                      className="fg-fill"
+                      style={{ width: `${rowPct(subMetric(s), subMax)}%` }}
+                    />
+                  </div>
                 </li>
               ))}
             </ul>

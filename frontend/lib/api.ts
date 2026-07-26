@@ -57,7 +57,10 @@ export interface SubstationFeeder {
   feeder_id: string;
   friendly_name: string | null;
   hosting_capacity_min_mw: number | null;
+  hosting_capacity_max_mw: number | null;
+  pv_thermal_mw: number | null;
   queued_der_mw: number | null;
+  connected_der_mw: number | null;
 }
 
 export interface SubstationDetail extends Omit<SubstationSummary, "geometry_geojson"> {
