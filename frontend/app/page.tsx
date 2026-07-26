@@ -16,6 +16,9 @@ import {
 } from "@/lib/api";
 
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
+const Tour3D = dynamic(() => import("@/components/Tour3D"), { ssr: false });
+const MapView3D = dynamic(() => import("@/components/MapView3D"), { ssr: false });
+const SubstationTour3D = dynamic(() => import("@/components/SubstationTour3D"), { ssr: false });
 
 const SORTS: { key: FeederSort; label: string }[] = [
   { key: "capacity", label: "Capacity" },
@@ -44,6 +47,9 @@ export default function Home() {
   const [view, setView] = useState<"feeders" | "substations">("substations");
   const [subSort, setSubSort] = useState<"queued" | "connected" | "feeders" | "id">("connected");
   const [sort, setSort] = useState<FeederSort>("capacity");
+  const [tour, setTour] = useState(false);
+  const [mapMode, setMapMode] = useState<"3d" | "2d">("3d");
+  const [subTour, setSubTour] = useState(false);
 
   useEffect(() => {
     api.searchSubstations("", 50).then(setSubstations).catch(() => {});
@@ -202,18 +208,38 @@ export default function Home() {
         )}
       </aside>
       <section className="map">
-        <MapView
-          geometry={feeder?.geometry ?? null}
-          substations={substations}
-          selectedSubstation={substation?.name ?? null}
-          onSelectSubstation={selectSubstation}
-        />
+        {mapMode === "3d" ? (
+          <MapView3D
+            geometry={feeder?.geometry ?? null}
+            substations={substations}
+            selectedSubstation={substation?.name ?? null}
+            onSelectSubstation={selectSubstation}
+          />
+        ) : (
+          <MapView
+            geometry={feeder?.geometry ?? null}
+            substations={substations}
+            selectedSubstation={substation?.name ?? null}
+            onSelectSubstation={selectSubstation}
+          />
+        )}
+        <nav className="tabs map-mode" aria-label="Map mode">
+          <button className={mapMode === "3d" ? "on" : ""} onClick={() => setMapMode("3d")}>
+            3D
+          </button>
+          <button className={mapMode === "2d" ? "on" : ""} onClick={() => setMapMode("2d")}>
+            2D
+          </button>
+        </nav>
         {feeder && (
           <div className="sheet" role="dialog" aria-label={`Feeder ${feeder.feeder_id}`}>
             <div className="sheet-grip" aria-hidden="true" />
             <div className="sheet-bar">
               <button className="sheet-back" onClick={() => setFeeder(null)}>
                 &larr; {substation ? substation.name : "All feeders"}
+              </button>
+              <button className="tour-open" onClick={() => setTour(true)}>
+                3D tour
               </button>
               <button
                 className="sheet-close"
@@ -236,6 +262,11 @@ export default function Home() {
               <button className="sheet-back" onClick={() => setSubstation(null)}>
                 &larr; All substations
               </button>
+              {substation.geometry && (
+                <button className="tour-open" onClick={() => setSubTour(true)}>
+                  3D tour
+                </button>
+              )}
               <button className="sheet-close" onClick={() => setSubstation(null)} aria-label="Close">
                 &times;
               </button>
@@ -244,6 +275,10 @@ export default function Home() {
           </div>
         )}
         <GridGuide feeder={feeder} />
+        {tour && feeder && <Tour3D feeder={feeder} onClose={() => setTour(false)} />}
+        {subTour && substation && (
+          <SubstationTour3D substation={substation} onClose={() => setSubTour(false)} />
+        )}
       </section>
     </main>
   );

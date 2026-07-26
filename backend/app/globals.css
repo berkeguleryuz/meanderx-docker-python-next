@@ -1,0 +1,27 @@
+
+.map3d { position: absolute; inset: 0; }
+.map .map3d.maplibregl-map { position: absolute; }
+.map-mode {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1200;
+}
+.map-mode button { padding: 6px 18px; }
+.dot3d {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #3d5eff;
+  border: 2px solid #0d0f12;
+  cursor: pointer;
+}
+.dot3d.est { opacity: 0.6; border-style: dashed; }
+.maplibregl-popup-content {
+  font-family: var(--font-body), sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #10141b;
+  border-radius: 8px;
+  padding: 8px 12px;
+}

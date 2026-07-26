@@ -445,9 +445,11 @@ aside::-webkit-scrollbar-thumb:hover { background: var(--platinum-dim); }
   box-shadow: 0 4px 14px rgba(16, 20, 27, 0.35);
   animation: pin-pop 0.25s ease-out;
 }
-.leaflet-container .leaflet-marker-pane .logo-pin-wrap .logo-pin img {
-  width: 30px;
-  height: 30px;
+.logo-pin { overflow: hidden; }
+.logo-pin img {
+  width: 30px !important;
+  height: 30px !important;
+  max-width: none;
   border-radius: 50%;
   background: #ffffff;
   display: block;
@@ -469,3 +471,77 @@ aside::-webkit-scrollbar-thumb:hover { background: var(--platinum-dim); }
 .legend-row em { font-style: normal; font-family: var(--font-display), sans-serif; font-weight: 500; font-size: 12.5px; color: var(--ice); }
 .legend-row em b { font-weight: 400; font-size: 10px; color: var(--platinum-dim); }
 @media (max-width: 900px) { .legends { grid-template-columns: 1fr; } }
+
+.tour { position: fixed; inset: 0; z-index: 2000; background: var(--obsidian); }
+.tour .tour-map { position: absolute !important; inset: 0; width: 100%; height: 100%; }
+.tour-hud {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: rgba(13, 15, 18, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 16px;
+  color: var(--platinum);
+}
+.tour-hud .eyebrow { display: inline; margin: 0 8px 0 0; }
+.tour-hud strong { font-family: var(--font-display), sans-serif; font-weight: 500; color: var(--white); }
+.tour-actions { display: flex; gap: 8px; }
+.tour-actions button {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--graphite);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.tour-actions button:hover { border-color: var(--ice-deep); }
+.sheet-bar { position: relative; }
+.tour-open {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--obsidian);
+  background: var(--ice);
+  border: none;
+  border-radius: 999px;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+.tour-open:hover { background: var(--ice-deep); color: var(--white); }
+
+.map .map3d { position: absolute !important; inset: 0; width: 100%; height: 100%; }
+.map-mode {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1200;
+}
+.map-mode button { padding: 6px 18px; }
+.dot3d {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #3d5eff;
+  border: 2px solid #0d0f12;
+  cursor: pointer;
+}
+.dot3d.est { opacity: 0.6; border-style: dashed; }
+.maplibregl-popup-content {
+  font-family: var(--font-body), sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #10141b;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
