@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # Named volume instead of a bind mount: works out of the box on macOS,
+      # where bind-mounting Desktop/Documents paths needs a TCC permission grant.
+      - meanderx_data:/srv/data
+
+volumes:
+  meanderx_data:
